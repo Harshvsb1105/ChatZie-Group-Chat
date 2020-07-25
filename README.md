@@ -1,6 +1,6 @@
 # chatzie
 
-A new Flutter application.
+This is a group chat app which have basic features and is made using flutter and firebase.
 
 ## Getting Started
 
