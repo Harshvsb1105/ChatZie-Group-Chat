@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "189766235165",
+    "firebase_url": "https://chatzie-77f6d.firebaseio.com",
+    "project_id": "chatzie-77f6d",
+    "storage_bucket": "chatzie-77f6d.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:189766235165:android:90695ceb065185036e02f4",
+        "android_client_info": {
+          "package_name": "harsh.chatzie"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "189766235165-41hpmrqtt72tc0111i5eg7bajrt971tf.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBy3j9w2IqPEfK52LyFKLbYq6bOGRsV_Gs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "189766235165-41hpmrqtt72tc0111i5eg7bajrt971tf.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
