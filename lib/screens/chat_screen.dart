@@ -1,37 +1,33 @@
+import 'package:chatzie/Controller/AccessController.dart';
+import 'package:chatzie/screens/welcome_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import '../constants.dart';
 
 final _firestore = Firestore.instance;
-FirebaseUser loggedInUser;
 
 class ChatScreen extends StatefulWidget {
   static const String id = 'chat_screen';
+  final int mode;
+
+  const ChatScreen({
+    Key key,
+    this.mode,
+  }) : super(key: key);
   @override
   _ChatScreenState createState() => _ChatScreenState();
 }
 
 class _ChatScreenState extends State<ChatScreen> {
   final messageTextController = TextEditingController();
-  final _auth = FirebaseAuth.instance;
   String messageText;
+  AccessController accessController = Get.put(AccessController());
 
   @override
   void initState() {
     super.initState();
-    getCurrentUser();
-  }
-
-  void getCurrentUser() async {
-    try {
-      final user = await _auth.currentUser();
-      if (user != null) {
-        loggedInUser = user;
-      }
-    } catch (e) {
-      print(e);
-    }
+    accessController.getCurrentUser();
   }
 
   @override
@@ -44,9 +40,11 @@ class _ChatScreenState extends State<ChatScreen> {
               color: Color(0xFFff9ad4),
               icon: Icon(Icons.close),
               onPressed: () {
-                _auth.signOut();
-                Navigator.pop(context);
-              }),
+                widget.mode == 1
+                    ? accessController.fbSignOut(context)
+                    : accessController.signOut();
+                Navigator.pushReplacementNamed(context, WelcomeScreen.id);
+              })
         ],
         title: Center(
             child: Text(
@@ -86,8 +84,9 @@ class _ChatScreenState extends State<ChatScreen> {
                       //always check for spellings.
                       //Pathway for storing data in cloud firestore.
                       _firestore.collection('messages').add({
-                        'text': messageText, //rake the typed text
-                        'sender': loggedInUser.email, //take the users ID
+                        'text': messageText, //take the typed text
+                        'sender': accessController
+                            .loggedInUser.email, //take the users ID
                         'time': FieldValue.serverTimestamp()
                       });
                     },
@@ -107,8 +106,13 @@ class _ChatScreenState extends State<ChatScreen> {
 }
 
 class MessagesStream extends StatelessWidget {
+  const MessagesStream({
+    Key key,
+  }) : super(key: key);
   @override
   Widget build(BuildContext context) {
+    AccessController accessController = Get.put(AccessController());
+
     return StreamBuilder<QuerySnapshot>(
       stream: _firestore
           .collection('messages')
@@ -129,7 +133,7 @@ class MessagesStream extends StatelessWidget {
           final messageSender = message.data['sender'];
           final messageTime = message.data['time'] as Timestamp;
 
-          final currentUser = loggedInUser.email;
+          final currentUser = accessController.loggedInUser.email;
 
           final messageBubble = MessageBubble(
             sender: messageSender,
@@ -153,7 +157,12 @@ class MessagesStream extends StatelessWidget {
 }
 
 class MessageBubble extends StatelessWidget {
-  MessageBubble({this.text, this.sender, this.isMe, this.time});
+  MessageBubble({
+    this.text,
+    this.sender,
+    this.isMe,
+    this.time,
+  });
 
   final String text;
   final String sender;
@@ -209,6 +218,7 @@ class MessageBubble extends StatelessWidget {
             height: 10,
           ),
           Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: <Widget>[
               Text(
                 '$sender',

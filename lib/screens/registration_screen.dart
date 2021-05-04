@@ -1,6 +1,7 @@
+import 'package:chatzie/Controller/AccessController.dart';
 import 'package:chatzie/components/rounded_button.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:get/get.dart';
 import 'chat_screen.dart';
 import 'package:modal_progress_hud/modal_progress_hud.dart';
 
@@ -11,10 +12,11 @@ class RegistrationScreen extends StatefulWidget {
 }
 
 class _RegistrationScreenState extends State<RegistrationScreen> {
-  final _auth = FirebaseAuth.instance;
   bool showSpinner = false;
   String email;
   String password;
+
+  AccessController accessController = Get.put(AccessController());
 
   @override
   Widget build(BuildContext context) {
@@ -109,6 +111,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                   ],
                 ),
                 child: TextField(
+                  style: TextStyle(color: Color(0xFFff9ad4)),
                   keyboardType: TextInputType.emailAddress,
                   textAlign: TextAlign.center,
                   onChanged: (value) {
@@ -140,28 +143,36 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         spreadRadius: 0.0)
                   ],
                 ),
-                child: RoundedButton(
-                  title: 'Register',
-                  colour: Color(0xFF6226a7),
-                  onPressed: () async {
-                    setState(() {
-                      showSpinner = true;
-                    });
-                    try {
-                      final newUser =
-                          await _auth.createUserWithEmailAndPassword(
-                              email: email, password: password);
-                      if (newUser != null) {
-                        Navigator.pushNamed(context, ChatScreen.id);
-                      }
+                child: StatefulBuilder(
+                  builder: (context, state) {
+                    return RoundedButton(
+                      title: 'Register',
+                      colour: Color(0xFF6226a7),
+                      onPressed: () async {
+                        setState(() {
+                          showSpinner = true;
+                        });
+                        try {
+                          final newUser =
+                          await accessController.register(email, password);
+                          if (newUser != null) {
+                            print('##### $email & $password');
+                            Navigator.pushNamed(context, ChatScreen.id);
+                          }
 
-                      setState(() {
-                        showSpinner = false;
-                      });
-                    } catch (e) {
-                      print(e);
-                    }
-                  },
+                          setState(() {
+                            showSpinner = false;
+                          });
+                        } catch (e) {
+                          setState(() {
+                            showSpinner = false;
+                          });
+                          Scaffold.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+                          print(e);
+                        }
+                      },
+                    );
+                  }
                 ),
               ),
             ],

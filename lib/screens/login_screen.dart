@@ -1,9 +1,9 @@
+import 'package:chatzie/Controller/AccessController.dart';
 import 'package:chatzie/components/rounded_button.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:get/get.dart';
 import 'chat_screen.dart';
 import 'package:modal_progress_hud/modal_progress_hud.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:fluttericon/font_awesome5_icons.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -14,39 +14,9 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   bool showSpinner = false;
-  final _auth = FirebaseAuth.instance;
-  final GoogleSignIn _googleSignIn = GoogleSignIn();
   String email;
   String password;
-
-  Future<FirebaseUser> _handleSignIn() async {
-    FirebaseUser user;
-
-    bool isSignedIn = await _googleSignIn.isSignedIn();
-
-    if (isSignedIn) {
-      user = await _auth.currentUser();
-    } else {
-      final GoogleSignInAccount googleUser = await _googleSignIn.signIn();
-
-      final GoogleSignInAuthentication googleAuth =
-          await googleUser.authentication;
-
-      final AuthCredential credential = GoogleAuthProvider.getCredential(
-          idToken: googleAuth.idToken, accessToken: googleAuth.accessToken);
-
-      user = (await _auth.signInWithCredential(credential)).user;
-    }
-    return user;
-  }
-
-  void onGoogleSignIn(BuildContext context) async {
-    FirebaseUser user = await _handleSignIn();
-    Navigator.pushNamed(
-      context,
-      ChatScreen.id,
-    );
-  }
+  AccessController accessController = Get.put(AccessController());
 
   @override
   Widget build(BuildContext context) {
@@ -174,66 +144,55 @@ class _LoginScreenState extends State<LoginScreen> {
                         spreadRadius: 0.0)
                   ],
                 ),
-                child: RoundedButton(
-                  title: 'LogIn',
-                  colour: Color(0xFF6226a7),
-                  onPressed: () async {
-                    setState(() {
-                      showSpinner = true;
-                    });
-                    try {
-                      final user = await _auth.signInWithEmailAndPassword(
-                          email: email, password: password);
-                      if (user != null) {
-                        Navigator.pushNamed(context, ChatScreen.id);
-                      }
-
-                      setState(() {
-                        showSpinner = false;
-                      });
-                    } catch (e) {
-                      print(e);
+                child: StatefulBuilder(
+                    builder: (context, snapshot) {
+                      return RoundedButton(
+                        title: 'LogIn',
+                        colour: Color(0xFF6226a7),
+                        onPressed: () async {
+                          setState(() {
+                            showSpinner = true;
+                          });
+                          try {
+                            final user = await accessController.logIn(email, password);
+                            if (user != null) {
+                              Navigator.push(context, MaterialPageRoute(builder: (context) => ChatScreen(mode: 0,)));
+                              setState(() {
+                                showSpinner = false;
+                              });
+                            }
+                          } catch (e) {
+                            setState(() {
+                              showSpinner = false;
+                            });
+                            Scaffold.of(context).showSnackBar(SnackBar(content: Text('Wrong Email or Password / User not found')));
+                            print(e);
+                          }
+                        },
+                      );
                     }
-                  },
                 ),
               ),
               SizedBox(
                 height: 30,
               ),
               Container(
-//                decoration: BoxDecoration(
-//                  color: Color(0xFF6226a7),
-//                  borderRadius: BorderRadius.circular(15.0),
-//                  boxShadow: [
-//                    BoxShadow(
-//                        color: Color(0xFF53208e),
-//                        offset: Offset(4, 2),
-//                        blurRadius: 4.0,
-//                        spreadRadius: 0.0),
-//                    BoxShadow(
-//                        color: Color(0xFF712cc0),
-//                        offset: Offset(-4, -2),
-//                        blurRadius: 4.0,
-//                        spreadRadius: 0.0)
-//                  ],
-//                ),
-
                 child: FlatButton.icon(
                     label: Text(
-                      "Sign in with Google",
+                      "Sign in with Facebook",
                       style: TextStyle(
                           color: Color(0xFFff9ad4),
                           fontWeight: FontWeight.bold,
                           fontSize: 14),
                     ),
                     icon: Icon(
-                      FontAwesome5.google,
+                      FontAwesome5.facebook,
                       color: Color(0xFFff9ad4),
                       size: 30,
                     ),
                     color: Color(0xFF6226a7),
                     onPressed: () {
-                      onGoogleSignIn(context);
+                      accessController.fbSignIn(context);
                     }),
               )
             ],
@@ -243,3 +202,4 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 }
+

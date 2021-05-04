@@ -36,6 +36,8 @@ dependencies:
   flutter_neumorphic: ^3.0.1
   google_sign_in: ^4.5.1
   fluttericon: ^1.0.7
+  flutter_login_facebook: any
+  get: any
 
 
 
