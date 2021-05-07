@@ -43,7 +43,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 widget.mode == 1
                     ? accessController.fbSignOut(context)
                     : accessController.signOut();
-                Navigator.pushReplacementNamed(context, WelcomeScreen.id);
+                Navigator.pushNamedAndRemoveUntil(context, WelcomeScreen.id, (Route<dynamic> route) => false);
               })
         ],
         title: Center(
